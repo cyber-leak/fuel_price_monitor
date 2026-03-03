@@ -1,0 +1,15 @@
+# Системные файлы
+.DS_Store
+
+# Окружение и зависимости
+.venv/
+venv/
+env/
+
+# Кэш Python
+__pycache__/
+*.pyc
+
+# Секреты (токены)
+.env
+config.py
