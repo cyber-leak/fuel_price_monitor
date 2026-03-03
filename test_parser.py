@@ -1,56 +1,57 @@
-import requests  # Импортируем библиотеку (пакет)
+import requests
 from bs4 import BeautifulSoup
 
-# 1. URL — это адрес сайта, куда мы пойдем.
-# Давай для примера возьмем страницу Минфина с ценами на бензин.
-
 url = "https://index.minfin.com.ua/markets/fuel/tm/"
-
-
-# 2. Выполняем запрос.
-# requests — это объект-библиотека.
-# .get() — это МЕТОД этого объекта (действие "сходи и принеси").
-# url — это АРГУМЕНТ (куда именно идти).
 response = requests.get(url)
 
-# 3. response — это ОБЪЕКТ-ОТВЕТ, который нам вернул сервер.
-# У него есть СВОЙСТВО .status_code (числовой код ответа).
 
-if response.status_code == 200:
-    soup = BeautifulSoup(response.text, "html.parser")
-    tables = soup.find_all("table")
+while True:
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, "html.parser")
+        tables = soup.find_all("table")
 
-    if len(tables) > 0:
-        # 1. Сначала спрашиваем название (в боте это будет нажатие кнопки)
-        target_brand = input("Введите название заправки (например, WOG): ")
+        if len(tables) > 0:
+            target_brand = input("Введите название заправки (например, WOG или OKKO): ")
 
-        found = False  # Флаг: нашли мы заправку или нет
-        rows = tables[0].find_all("tr")
+            rows = tables[0].find_all("tr")
+            found = False
 
-        for row in rows:
-            # 2. Сравниваем ввод пользователя с текстом в строке
-            # Добавим .upper(), чтобы "wog" и "WOG" были одинаковыми
-            if target_brand.upper() in row.text.upper():
-                cells = row.find_all("td")
+            # Пропускаем первую строку (шапку), так как ищем только по данным
+            for row in rows[1:]:
+                if target_brand.upper() in row.text.upper():
 
-                if len(cells) >= 6:
-                    name = cells[0].text.strip()
-                    p95 = cells[1].text.strip()
-                    a95 = cells[2].text.strip()
-                    diesel = cells[4].text.strip()
-                    gas = cells[5].text.strip()
+                    # Вытаскиваем все ячейки, сохраняя пустые места (чтобы ничего не сдвинулось)
+                    cells = [cell.text.strip() for cell in row.find_all("td")]
 
-                    result = (
-                        f"⛽️ Заправка: {name}\n"
-                        f"🔹 А-95+: {p95} грн\n"
-                        f"🔹 А-95: {a95} грн\n"
-                        f"🔹 Дизель: {diesel} грн\n"
-                        f"🔸 Газ: {gas} грн"
-                    )
-                    print(result)
-                    # Выводим результат
-                    found = True
-                    break  # Останавливаем цикл, так как заправка найдена
+                    # Защита: проверяем, что в строке действительно 7 или больше элементов
+                    if len(cells) >= 7:
+                        # Разбираем ячейки по их реальным позициям (индекс 1 пропускаем!)
+                        name = cells[0]
 
-        if not found:
-            print(f"❌ Заправка '{target_brand}' не найдена в списке.")
+                        # Конструкция 'val if val else "-"' значит:
+                        # "возьми значение, но если там пустота '', то поставь прочерк"
+                        p95_plus = cells[2] if cells[2] else "-"
+                        a95 = cells[3] if cells[3] else "-"
+                        a92 = cells[4] if cells[4] else "-"
+                        diesel = cells[5] if cells[5] else "-"
+                        gas = cells[6] if cells[6] else "-"
+
+                        result = (
+                            f"⛽️ Заправка: {name}\n"
+                            f"🔹 А-95+: {p95_plus} грн\n"
+                            f"🔹 А-95: {a95} грн\n"
+                            f"🔹 А-92: {a92} грн\n"
+                            f"🔹 Дизель: {diesel} грн\n"
+                            f"🔸 Газ: {gas} грн"
+                        )
+
+                        print(result)
+                        found = True
+                        break
+
+            if not found:
+                print(f"❌ Заправка '{target_brand}' не найдена.")
+        else:
+            print("Таблицы не найдены.")
+    else:
+        print(f"Ошибка сети: {response.status_code}")
