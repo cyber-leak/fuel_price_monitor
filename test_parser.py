@@ -1,24 +1,45 @@
 import requests
 from bs4 import BeautifulSoup
 
-url = "https://index.minfin.com.ua/markets/fuel/tm/"
-response = requests.get(url)
 
+def get_fuel_price(target_brand):
+    url = "https://index.minfin.com.ua/markets/fuel/tm/"
+    response = requests.get(url)
 
-while True:
+    """словарь синонимов"""
+    synonyms = {
+        "WOG": "WOG",
+        "OKKO": "ОККО",
+        "BVS": "BVS",
+        "SOCAR": "SOCAR",
+        "UKRNAFTA": "Укрнафта",
+        "BRSM": "БРСМ-Нафта",
+        "UPG": "UPG",
+        "Motto": "Motto",
+        "KLO": "KLO",
+        "AMIC": "AMIC",
+    }
+
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, "html.parser")
         tables = soup.find_all("table")
 
         if len(tables) > 0:
-            target_brand = input("Введите название заправки (например, WOG или OKKO): ")
+            assert target_brand is not None, "target_brand не должен быть None"
+            search_query = synonyms.get(target_brand, target_brand)
+
+            if search_query is None:  # если None - ошибка
+                raise ValueError("Поисковый запрос не может быть пустым (None)")
 
             rows = tables[0].find_all("tr")
             found = False
 
             # Пропускаем первую строку (шапку), так как ищем только по данным
             for row in rows[1:]:
-                if target_brand.upper() in row.text.upper():
+                row_text_lower = row.text.lower()
+                search_query_lower = search_query.lower()
+
+                if search_query_lower in row_text_lower:
 
                     # Вытаскиваем все ячейки, сохраняя пустые места (чтобы ничего не сдвинулось)
                     cells = [cell.text.strip() for cell in row.find_all("td")]
@@ -45,13 +66,11 @@ while True:
                             f"🔸 Газ: {gas} грн"
                         )
 
-                        print(result)
-                        found = True
-                        break
+                        return result
 
             if not found:
-                print(f"❌ Заправка '{target_brand}' не найдена.")
+                return f"❌ Заправка '{target_brand}' не найдена."
         else:
-            print("Таблицы не найдены.")
+            return "Таблицы не найдены."
     else:
-        print(f"Ошибка сети: {response.status_code}")
+        return f"Ошибка сети: {response.status_code}"
