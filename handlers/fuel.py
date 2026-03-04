@@ -32,3 +32,18 @@ def register_fuel_handlers(bot):
 
         answer = test_parser.get_fuel_price(target_brand)
         bot.send_message(call.message.chat.id, answer)
+
+    @bot.message_handler(func=lambda message: True)
+    def handle_unknow_message(message):
+        help_text = (
+            "🤔 **Я пока не умею распознавать текст.**\n\n"
+            "Чтобы получить актуальную информацию, пожалуйста, используйте кнопки меню. 👇\n\n"
+            "ℹ️ Я анализирую **средние цены** по сетям АЗС, предоставленные финансовым порталом **Минфин**. Данные обновляются в режиме реального времени."
+        )
+
+        bot.send_message(
+            message.chat.id,
+            help_text,
+            parse_mode="Markdown",
+            reply_markup=inline.get_top_brands_keyboard(),
+        )
