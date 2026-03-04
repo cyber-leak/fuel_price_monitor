@@ -1,5 +1,4 @@
-import telebot
-import config 
+import telebot, database, config 
 from handlers.fuel import register_fuel_handlers
 from keyboards import inline
 
@@ -11,6 +10,7 @@ bot = telebot.TeleBot(config.TOKEN)
 # fuel.register_fuel_handlers(bot)
 inline.get_top_brands_keyboard()
 register_fuel_handlers(bot)
+database.init_db()
 
 
 if __name__ == "__main__":
