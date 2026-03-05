@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  bot:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    # Uncomment for local development to mount code without rebuilds
+    # volumes:
+    #   - ./:/app
+    # Use this if you need to expose ports for webhooks or metrics
+    # ports:
+    #   - "8000:8000"

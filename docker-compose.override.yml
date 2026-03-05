@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  bot:
+    volumes:
+      - ./:/app
+    env_file: .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python -u main.py
+    # Use this override for local development to avoid rebuilding the image
