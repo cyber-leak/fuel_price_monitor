@@ -21,9 +21,10 @@ def register_fuel_handlers(bot):
     @bot.message_handler(commands=["start"])
     def start(message: Message) -> None:
         """Приветственный экран, создание/обновление записи пользователя."""
-        user_name = message.from_user.first_name
-        # регистрируем пользователя в БД (безопасно - внутри функции есть try/except)
-        database.add_user(message.from_user.id, user_name)
+        if message.from_user:
+            user_name = message.from_user.first_name
+            # регистрируем пользователя в БД (безопасно - внутри функции есть try/except)
+            database.add_user(message.from_user.id, user_name)
 
         welcome_text = (
             f"Привет, {user_name}! 👋\n\n"
@@ -45,6 +46,8 @@ def register_fuel_handlers(bot):
     # Хендлер для кнопок выбора бренда
     @bot.callback_query_handler(func=lambda call: call.data.startswith("brand_"))
     def callback_fuel(call: CallbackQuery) -> None:
+        if not (call.data and call.from_user and call.message):
+            return
         """Обрабатывает нажатие на кнопку с брендом и отправляет цену."""
         target_brand = call.data.replace("brand_", "")
         database.log_action(call.from_user.id, f"check_{target_brand}")
@@ -61,7 +64,7 @@ def register_fuel_handlers(bot):
     def admin_stats(message: Message) -> None:
         """Команда для администратора: выводит статистику по пользователям и запросам."""
         ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
-        if message.from_user.id == ADMIN_ID:
+        if message.from_user and message.from_user.id == ADMIN_ID:
             top_actions = database.get_top_actions()
             total_users, total_clicks = database.get_stats()
             stats_text = (
