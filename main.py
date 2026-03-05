@@ -1,18 +1,41 @@
-import telebot, database, config 
+import logging
+import os
+
+import telebot
+from dotenv import load_dotenv
+
+import database
 from handlers.fuel import register_fuel_handlers
 from keyboards import inline
 
-# Создаем объект бота, используя токен из конфига
-bot = telebot.TeleBot(config.TOKEN)
+# загрузка переменных окружения из .env
+load_dotenv()
 
+# минимальная настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# "Регистрируем" обработчики, передавая им нашего бота
-# fuel.register_fuel_handlers(bot)
-inline.get_top_brands_keyboard()
-register_fuel_handlers(bot)
+# Токен бота должен храниться в .env (BOT_TOKEN) для безопасности
+token = os.getenv("BOT_TOKEN")
+if not token:
+    raise ValueError("BOT_TOKEN environment variable is required")
+
+# создаём объект бота
+bot = telebot.TeleBot(token)
+
+# Инициализация базы данных до регистрации обработчиков
 database.init_db()
+
+# Регистрируем хендлеры
+register_fuel_handlers(bot)
+
+# вызываем вспомогательную функцию, чтобы проверить, что клавиатура строится
+inline.get_top_brands_keyboard()
 
 
 if __name__ == "__main__":
     print("bot started....")
     bot.infinity_polling(none_stop=True)
+
+
+# Final production-ready refactor

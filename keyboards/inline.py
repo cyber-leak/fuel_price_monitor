@@ -1,13 +1,14 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def get_top_brands_keyboard():
+def get_top_brands_keyboard() -> InlineKeyboardMarkup:
+    """Строит клавиатуру с кнопками для выбора топ-АЗС.
+
+    Возвращает объект `InlineKeyboardMarkup`, используемый в сообщениях.
+    """
     markup = InlineKeyboardMarkup()
 
-    # Создаем кнопки.
-    # text — что видит юзер
-    # callback_data — что "услышит" бот (пишем латиницей для надежности)
-
+    # Создаем кнопки и задаём callback_data, по которому поймёт бот
     buttons = [
         InlineKeyboardButton(text="WOG", callback_data="brand_WOG"),
         InlineKeyboardButton(text="OKKO", callback_data="brand_OKKO"),
