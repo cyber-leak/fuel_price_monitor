@@ -133,4 +133,3 @@ services:
 
 - MIT © cyber-leak
 
-Если нужно, могу добавить пример `Dockerfile`, `docker-compose.yml` и `README`‑раздел с примерами Docker образа.
